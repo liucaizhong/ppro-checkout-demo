@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPRO Checkout - Secure Payment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Header -->
+        <header class="checkout-header">
+            <div class="logo">
+                <img src="./icon/AW.webp" width="25" height="25" alt="AE">
+                <span>Amazon</span>
+            </div>
+            <div class="security-badge">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 1L2 4V7.5C2 11.08 4.69 14.43 8 15C11.31 14.43 14 11.08 14 7.5V4L8 1Z" fill="#4CAF50"/>
+                    <path d="M6.5 9.5L5 8L4.3 8.7L6.5 10.9L11.7 5.7L11 5L6.5 9.5Z" fill="white"/>
+                </svg>
+                <span>Secure Checkout</span>
+            </div>
+        </header>
+
+        <div class="checkout-content">
+            <!-- Left Panel - Order Summary -->
+            <aside class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="order-items">
+                    <div class="order-item">
+                        <div class="item-info">
+                            <div class="item-image">📦</div>
+                            <div class="item-details">
+                                <h3>Premium Subscription</h3>
+                                <p>Annual Plan - Full Access</p>
+                            </div>
+                        </div>
+                        <div class="item-price">€99.00</div>
+                    </div>
+                    <div class="order-item">
+                        <div class="item-info">
+                            <div class="item-image">🎁</div>
+                            <div class="item-details">
+                                <h3>Welcome Bonus</h3>
+                                <p>Free first month upgrade</p>
+                            </div>
+                        </div>
+                        <div class="item-price">€0.00</div>
+                    </div>
+                </div>
+                
+                <div class="order-breakdown">
+                    <div class="breakdown-line">
+                        <span>Subtotal</span>
+                        <span>€99.00</span>
+                    </div>
+                    <div class="breakdown-line">
+                        <span>Tax (VAT)</span>
+                        <span>€20.79</span>
+                    </div>
+                    <div class="breakdown-line total">
+                        <span>Total</span>
+                        <span class="total-amount">€119.79</span>
+                    </div>
+                </div>
+
+                <div class="trust-badges">
+                    <div class="badge">🔒 SSL Encrypted</div>
+                    <div class="badge">✓ PCI Compliant</div>
+                    <div class="badge">💳 3D Secure</div>
+                </div>
+            </aside>
+
+            <!-- Right Panel - Payment Form -->
+            <main class="payment-form">
+                <div class="form-section">
+                    <h2>Payment Details</h2>
+                    
+                    <!-- Currency Selection -->
+                    <div class="form-group">
+                        <label for="currency">
+                            <span>Currency</span>
+                            <span class="required">*</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="currency" required>
+                                <option value="EUR">EUR - Euro (€)</option>
+                                <option value="PLN">PLN - Polish Złoty (zł)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="form-group">
+                        <label>
+                            <span>Payment Method</span>
+                            <span class="required">*</span>
+                        </label>
+                        <div class="payment-methods">
+                            <div class="payment-method" data-method="blik" data-currency="PLN">
+                                <input type="radio" id="blik" name="paymentMethod" value="blik">
+                                <label for="blik">
+                                    <div class="method-icon">
+                                        <img src="./icon/BLIK.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' fill='%23e31e24' width='120' height='40' rx='4' x='60' y='26' font-family='Arial Black' font-size='18' fill='white' text-anchor='middle' font-weight='bold' alt="BLIK">
+                                    </div>
+                                    <div class="method-info">
+                                        <h4>BLIK</h4>
+                                        <p>Polish mobile payment</p>
+                                        <span class="currency-tag">PLN only</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="payment-method" data-method="ideal" data-currency="EUR">
+                                <input type="radio" id="ideal" name="paymentMethod" value="ideal">
+                                <label for="ideal">
+                                    <div class="method-icon">
+                                        <img src="./icon/iDEAL.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100' fill='%23CC0066' width='120' height='100' rx='4' x='60' y='26' font-family='Arial' font-size='16' fill='white' text-anchor='middle' font-weight='bold' alt="iDEAL">
+                                    </div>
+                                    <div class="method-info">
+                                        <h4>iDEAL</h4>
+                                        <p>Dutch online banking</p>
+                                        <span class="currency-tag">EUR only</span>
+                                        <span class="feature-tag">Recurring available</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="payment-method" data-method="bancontact" data-currency="EUR">
+                                <input type="radio" id="bancontact" name="paymentMethod" value="bancontact">
+                                <label for="bancontact">
+                                    <div class="method-icon">
+                                        <img src="./icon/Bancontact.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' fill='%23005498' width='120' height='40' rx='4' x='60' y='26' font-family='Arial' font-size='13' fill='white' text-anchor='middle' font-weight='bold' style="background-color: white;" alt="Bancontact">
+                                    </div>
+                                    <div class="method-info">
+                                        <h4>Bancontact</h4>
+                                        <p>Belgian payment card</p>
+                                        <span class="currency-tag">EUR only</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recurring Payment Option (for iDEAL) -->
+                    <div id="recurringOption" class="form-group" style="display: none;">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="enableRecurring">
+                            <label for="enableRecurring">
+                                <span class="checkbox-custom"></span>
+                                <div class="checkbox-label">
+                                    <strong>Enable Recurring Payments</strong>
+                                    <p>Save this payment method for future automatic payments</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Payment Button -->
+                    <button id="payButton" class="pay-button" disabled>
+                        <span class="button-text">Select a payment method</span>
+                        <span class="button-loader" style="display: none;">
+                            <svg width="20" height="20" viewBox="0 0 50 50">
+                                <circle cx="25" cy="25" r="20" fill="none" stroke="white" stroke-width="5" stroke-dasharray="31.4 31.4" stroke-linecap="round">
+                                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+                                </circle>
+                            </svg>
+                        </span>
+                    </button>
+
+                    <!-- Error Display -->
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+                    <!-- Payment Status -->
+                    <div id="paymentStatus" class="payment-status" style="display: none;"></div>
+                </div>
+
+                <!-- Money Back Guarantee -->
+                <div class="guarantee">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="#4CAF50" stroke-width="2"/>
+                        <path d="M9 12L11 14L15 10" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <div>
+                        <strong>30-Day Money Back Guarantee</strong>
+                        <p>If you're not satisfied, we'll refund you in full - no questions asked</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
