@@ -142,7 +142,7 @@ Content-Type: application/json
 
 {
   "method": "blik|ideal|bancontact",
-  "currency": "EUR|GBP|USD|PLN",
+  "currency": "EUR|PLN",
   "amount": 11979,
   "recurring": false,
   "idempotencyKey": "unique-key"
@@ -240,7 +240,6 @@ ALLOWED_ORIGINS=https://yourdomain.com
 - PPRO API wrapper
 - Idempotency handling
 - Recurring token management
-- Webhook processing
 - Error handling
 - Logging
 
@@ -253,8 +252,6 @@ ALLOWED_ORIGINS=https://yourdomain.com
 
 ### Status not updating
 - Check network connectivity
-- Verify webhook endpoint
-- Check charge ID validity
 
 ## 📚 Resources
 

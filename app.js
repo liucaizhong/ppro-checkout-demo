@@ -253,6 +253,7 @@ async function checkPaymentStatusById(chargeId) {
                 break;
             case 'pending':
             case 'processing':
+            case 'authentication_pending':
                 showStatus('⏳ Payment is being processed...', 'pending');
                 setTimeout(() => checkPaymentStatusById(chargeId), 2000);
                 break;
