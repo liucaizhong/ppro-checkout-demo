@@ -519,13 +519,13 @@
                 const response = await fetch(`${CONFIG.API_BASE_URL}/payments/status/${state.chargeId}`);
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.success) {
                     throw new Error(data.error || 'Failed to fetch status');
                 }
 
                 const status = data.status.toLowerCase();
 
-                if (status === 'successful' || status === 'success') {
+                if (status === 'successful' || status === 'success' || status === 'captured') {
                     stopPolling();
                     showStatus('✓ Payment successful! Redirecting...', 'success');
                     setTimeout(() => {
@@ -565,28 +565,6 @@
             elements.statusMessage.textContent = message;
             elements.statusMessage.className = `status-message ${type}`;
             elements.statusMessage.style.display = 'block';
-        }
-
-        // Update payment method specific instructions
-        function updateInstructions(method) {
-            const instructions = {
-                'blik': [
-                    'Open your mobile banking app',
-                    'Select BLIK payment option',
-                    'Scan this QR code with your app',
-                    'Confirm the payment',
-                    'Wait for confirmation'
-                ],
-                'default': [
-                    'Open your mobile banking app',
-                    'Select the payment option and scan this QR code',
-                    'Confirm the payment in your app',
-                    'Wait for confirmation'
-                ]
-            };
-
-            const methodInstructions = instructions[method.toLowerCase()] || instructions['default'];
-            elements.instructionsList.innerHTML = methodInstructions.map(text => `<li>${text}</li>`).join('');
         }
 
         // Cancel payment handler
@@ -638,7 +616,6 @@
             // Update page title based on payment method
             if (params.paymentMethod) {
                 elements.pageTitle.textContent = `${params.paymentMethod.toUpperCase()} Payment`;
-                updateInstructions(params.paymentMethod);
             }
 
             // Generate QR code
