@@ -15,8 +15,7 @@
     "blik",
     "ideal",
     "bancontact",
-    "recurring",
-    "drop-in"
+    "recurring"
   ],
   "author": "",
   "license": "MIT",

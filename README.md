@@ -12,7 +12,7 @@ A production-ready checkout page implementing PPRO Global API with multiple auth
 - ✅ **Payment Flow**: Complete redirect authentication flow
 
 ### Extra Mile Bonus Points ⭐
-- ⭐ **Multiple Authentication Flows**
+- ⭐ **Multiple Authentication Flows For Bancontact**: Redirect & QR code
 - ⭐ **Idempotency Support**: Prevents duplicate transactions
 - ⭐ **Mobile Responsive**: Optimized for all devices
 - ⭐ **Recurring Payments**: iDEAL subscription support

@@ -134,10 +134,24 @@
                                 <input type="radio" id="bancontact" name="paymentMethod" value="bancontact">
                                 <label for="bancontact">
                                     <div class="method-icon">
-                                        <img src="./icon/Bancontact.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' fill='%23005498' width='120' height='40' rx='4' x='60' y='26' font-family='Arial' font-size='13' fill='white' text-anchor='middle' font-weight='bold' style="background-color: white;" alt="Bancontact">
+                                        <img src="./icon/Bancontact.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' fill='%23005498' width='120' height='40' rx='4' x='60' y='26' font-family='Arial' font-size='13' fill='white' text-anchor='middle' font-weight='bold' style="background-color: white;padding: 2px;" alt="Bancontact">
                                     </div>
                                     <div class="method-info">
                                         <h4>Bancontact</h4>
+                                        <p>Belgian payment card</p>
+                                        <span class="currency-tag">EUR only</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="payment-method" data-method="bancontactQR" data-currency="EUR">
+                                <input type="radio" id="bancontactQR" name="paymentMethod" value="bancontactQR">
+                                <label for="bancontactQR">
+                                    <div class="method-icon">
+                                        <img src="./icon/Bancontact.svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' fill='%23005498' width='120' height='40' rx='4' x='60' y='26' font-family='Arial' font-size='13' fill='white' text-anchor='middle' font-weight='bold' style="background-color: white;padding: 2px;" alt="Bancontact">
+                                    </div>
+                                    <div class="method-info">
+                                        <h4>Bancontact QR</h4>
                                         <p>Belgian payment card</p>
                                         <span class="currency-tag">EUR only</span>
                                     </div>
@@ -154,7 +168,7 @@
                                 <span class="checkbox-custom"></span>
                                 <div class="checkbox-label">
                                     <strong>Enable Recurring Payments</strong>
-                                    <p>Save this payment method for future automatic payments</p>
+                                    <p>Save this payment method for future payments</p>
                                 </div>
                             </label>
                         </div>
@@ -186,7 +200,7 @@
                         <path d="M9 12L11 14L15 10" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                     <div>
-                        <strong>30-Day Money Back Guarantee</strong>
+                        <strong>180-Day Money Back Guarantee</strong>
                         <p>If you're not satisfied, we'll refund you in full - no questions asked</p>
                     </div>
                 </div>

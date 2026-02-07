@@ -10,7 +10,6 @@ const state = {
     selectedCurrency: 'EUR',
     recurringEnabled: false,
     currentChargeId: null,
-    dropinInstance: null
 };
 
 // DOM Elements
@@ -173,21 +172,29 @@ async function handleRedirectFlow(paymentData) {
         sessionStorage.setItem('pendingChargeId', data.chargeId);
         sessionStorage.setItem('idempotencyKey', paymentData.idempotencyKey);
         
-        if (data.requestUrl) {
+        if (data.qrCode) {
+            console.log('qrcode payload:', data.qrCode);
+            // Redirect to QR code page for BLIK and similar methods
+            showStatus(`Generating ${data.method} code...`, 'pending');
+            
+            const qrPageUrl = new URL('/qr-payment', window.location.origin);
+            qrPageUrl.searchParams.set('orderId', data.orderId);
+            qrPageUrl.searchParams.set('chargeId', data.chargeId);
+            qrPageUrl.searchParams.set('paymentMethod', paymentData.method);
+            qrPageUrl.searchParams.set('amount', paymentData.amount);
+            qrPageUrl.searchParams.set('currency', paymentData.currency);
+            
+            // Add QR data if provided by API, otherwise generate BEP format on QR page
+            qrPageUrl.searchParams.set('qrData', data.qrCode);
+            
+            setTimeout(() => {
+                window.location.href = qrPageUrl.toString();
+            }, 1000);
+        }
+        else if (data.requestUrl) {
             showStatus(`Redirecting to ${data.method}...`, 'pending');
             setTimeout(() => {
                 window.location.href = data.requestUrl;
-            }, 1000);
-        }// Redirect to payment page
-        else if (data.redirectUrl) {
-            showStatus('Redirecting to payment page...', 'pending');
-           // Replace {{chargeId}} placeholder if present in redirect URL
-            let finalRedirectUrl = data.redirectUrl;
-            if (finalRedirectUrl.includes('{{chargeId}}')) {
-                finalRedirectUrl = finalRedirectUrl.replace('{{chargeId}}', data.chargeId);
-            }
-            setTimeout(() => {
-                window.location.href = finalRedirectUrl;
             }, 1000);
         } else {
             throw new Error('No redirect URL received');

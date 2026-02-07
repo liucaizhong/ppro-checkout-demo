@@ -7,7 +7,6 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -35,6 +34,13 @@ const recurringTokenStore = new Map();
  */
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+/**
+ * Serve QR code page
+ */
+app.get('/qr-payment', (req, res) => {
+    res.sendFile(path.join(__dirname, 'qrCode.html'));
 });
 
 /**
@@ -111,7 +117,7 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
         },
     };
 
-    if (method == 'IDEAL') {
+    if (method === 'IDEAL') {
         if (recurring) {
             return {
                 paymentMethod: method,
@@ -160,7 +166,7 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
         }
     }
 
-    if (method == 'BLIK') {
+    if (method === 'BLIK') {
         return {
             ...paymentData,
             consumer: {
@@ -183,30 +189,33 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
         }
     }
 
-    if (method == 'BANCONTACT') {
+    if (method === 'BANCONTACT' || method === 'BANCONTACTQR') {
         return {
             ...paymentData,
+            paymentMethod: 'BANCONTACT',
             consumer: {
                 country: "BE",
             },
-            authenticationSettings: [{
-                type: 'REDIRECT',
-                settings: {
-                    returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
-                }
-            },
-            {
-                type: "SCAN_CODE",
-                settings: {
-                    scanBy: "2025-06-22T11:09:22.937Z"
-                }
-            },
-            {
-                type: "APP_INTENT",
-                settings:{
-                mobileIntentUri: "webshop://paymentresponse?123"
-            }
-            }],
+            authenticationSettings: [
+                {
+                    type: 'REDIRECT',
+                    settings: {
+                        returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
+                    }
+                },
+                {
+                    type: "SCAN_CODE",
+                    settings: {
+                        scanBy: "2025-06-22T11:09:22.937Z"
+                    }
+                },
+                {
+                    type: "APP_INTENT",
+                    settings:{
+                        mobileIntentUri: "webshop://paymentresponse?123"
+                    }
+                },
+            ],
         }
     }
 }
@@ -220,7 +229,7 @@ app.post('/api/payments/create', async (req, res) => {
 
     try {
         const { method, currency, amount, recurring, idempotencyKey } = req.body;
-        
+        console.log('method is:', method);
         // Validate required fields
         if (!method || !currency || !amount) {
             return res.status(400).json({ error: 'Missing required fields' });
@@ -240,7 +249,8 @@ app.post('/api/payments/create', async (req, res) => {
         const methodMap = {
             'blik': 'BLIK',
             'ideal': 'IDEAL',
-            'bancontact': 'BANCONTACT'
+            'bancontact': 'BANCONTACT',
+            'bancontactqr': 'BANCONTACTQR',
         };
         
         const pproMethod = methodMap[method.toLowerCase()];
@@ -257,6 +267,7 @@ app.post('/api/payments/create', async (req, res) => {
 
         let charge = {};
         let requestUrl = '';
+        let qrCode = '';
         // Add recurring parameters for iDEAL if enabled
         if (recurring && method === 'ideal') {
             // Create agreement via PPRO API
@@ -271,6 +282,9 @@ app.post('/api/payments/create', async (req, res) => {
 
             if (method === 'bancontact') {
                 requestUrl = charge.authenticationMethods.at(-1).details.requestUrl;
+            } else if (method === 'bancontactQR') {
+                qrCode = charge.authenticationMethods[1].details.codePayload;
+                console.log('qrcode payload:', qrCode);
             } else {
                 requestUrl = charge.authenticationMethods[0].details.requestUrl;
             }
@@ -282,13 +296,14 @@ app.post('/api/payments/create', async (req, res) => {
         
         const result = {
             success: true,
-            chargeId: charge.id,
+            chargeId: recurring && method === 'ideal' ? charge.initialPaymentChargeId : charge.id,
             orderId: orderId,
             redirectUrl: charge.redirectUrl || charge.redirect_url || `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=${charge.status}&chargeId=${charge.id}`,
             status: charge.status,
             merchantId: PPRO_CONFIG.merchantId,
             method: pproMethod,
             requestUrl,
+            qrCode,
         };
         
         // Store for idempotency
@@ -297,9 +312,9 @@ app.post('/api/payments/create', async (req, res) => {
         }
         
         // Store recurring token if applicable
-        if (recurring && charge.recurringToken) {
-            recurringTokenStore.set(charge.id, {
-                token: charge.recurringToken,
+        if (recurring) {
+            recurringTokenStore.set(charge.instrumentId, {
+                token: charge.id,
                 method: method,
                 currency: currency,
             });
