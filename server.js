@@ -115,6 +115,15 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
             value: amount,
             currency: currency,
         },
+        order: {
+            orderReferenceNumber: orderId,
+        }
+    };
+    const redirectConfigs = {
+        type: 'REDIRECT',
+        settings: {
+            returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&method=${method}`,
+        }
     };
 
     if (method === 'IDEAL') {
@@ -131,12 +140,7 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
                         debitMandateId: "YOUR_GENERATED_MANDATEID"
                     },
                 },
-                authenticationSettings: [{
-                    type: 'REDIRECT',
-                    settings: {
-                        returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
-                    }
-                }],
+                authenticationSettings: [redirectConfigs],
                 initialPaymentCharge: {
                     amount: {
                         value: amount,
@@ -157,12 +161,7 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
                     bankCode: 'TESTNL2A',
                 },
             },
-            authenticationSettings: [{
-                type: 'REDIRECT',
-                settings: {
-                    returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
-                }
-            }],
+            authenticationSettings: [redirectConfigs],
         }
     }
 
@@ -177,15 +176,12 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
                     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
                 },
             },
-            authenticationSettings: [{
-                type: 'REDIRECT',
-                settings: {
-                    returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
+            authenticationSettings: [
+                redirectConfigs,
+                {
+                    type: 'MULTI_FACTOR',
                 }
-            },
-            {
-                type: "MULTI_FACTOR"
-            }],
+            ],
         }
     }
 
@@ -197,12 +193,7 @@ function generatePaymentData(method='IDEAL', currency='EUR', amount = 0, orderId
                 country: "BE",
             },
             authenticationSettings: [
-                {
-                    type: 'REDIRECT',
-                    settings: {
-                        returnUrl: `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=initial`,
-                    }
-                },
+                redirectConfigs,
                 {
                     type: "SCAN_CODE",
                     settings: {
@@ -269,7 +260,7 @@ app.post('/api/payments/create', async (req, res) => {
         let requestUrl = '';
         let qrCode = '';
         // Add recurring parameters for iDEAL if enabled
-        if (recurring && method === 'ideal') {
+        if (recurring) {
             // Create agreement via PPRO API
             charge = await pproRequest('/v1/payment-agreements', 'POST', paymentData, idempKey);
             
@@ -289,21 +280,23 @@ app.post('/api/payments/create', async (req, res) => {
                 requestUrl = charge.authenticationMethods[0].details.requestUrl;
             }
 
-            console.log('LPM recurring request URL: ', requestUrl);
+            console.log('LPM request URL: ', requestUrl);
         }
         
         console.log('Creating payment response :', charge);
-        
+        const orderReferenceNumber = recurring ? orderId : charge.order.orderReferenceNumber;
+        const chargeId = recurring ? charge.initialPaymentChargeId : charge.id;
+
         const result = {
             success: true,
-            chargeId: recurring && method === 'ideal' ? charge.initialPaymentChargeId : charge.id,
-            orderId: orderId,
-            redirectUrl: charge.redirectUrl || charge.redirect_url || `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=${charge.status}&chargeId=${charge.id}`,
+            chargeId,
+            orderId: orderReferenceNumber,
+            redirectUrl: requestUrl,
             status: charge.status,
-            merchantId: PPRO_CONFIG.merchantId,
-            method: pproMethod,
-            requestUrl,
+            method: charge.paymentMethod,
             qrCode,
+            amount,
+            currency,
         };
         
         // Store for idempotency
@@ -336,25 +329,25 @@ app.post('/api/payments/create', async (req, res) => {
  */
 app.get('/api/payments/status/:chargeId', async (req, res) => {
     try {
-        const { chargeId } = req.params;
+        const { chargeId, orderId } = req.params;
         
         console.log('Fetching status for charge:', chargeId);
         
         // Get charge details from PPRO
         const charge = await pproRequest(`/v1/payment-charges/${chargeId}`, 'GET');
 
-        console.log('Fetching status for charge:', JSON.stringify(charge));
+        console.log('Fetching status for charge:', charge);
+        const redirectUrl = `${PPRO_CONFIG.returnUrl}?orderId=${orderId}&status=${charge.status}&chargeId=${charge.id}`;
         
         res.json({
             success: true,
-            chargeId: charge.id || charge.chargeId,
+            chargeId,
             status: charge.status,
-            orderId: charge.orderId || charge.order_id || charge.instrumentId,
+            orderId,
             amount: charge.amount,
             currency: charge.currency,
-            redirectUrl: charge.redirectUrl || charge.redirect_url || `${PPRO_CONFIG.returnUrl}?orderId=${charge.instrumentId}&status=${charge.status}`,
-            paymentMethod: charge.paymentMethod || charge.payment_method,
-            recurringToken: charge.recurringToken
+            redirectUrl,
+            method: charge.paymentMethod,
         });
         
     } catch (error) {
@@ -367,9 +360,9 @@ app.get('/api/payments/status/:chargeId', async (req, res) => {
  * Payment Return URL Handler
  */
 app.get('/payment-return', (req, res) => {
-    const { orderId, status, chargeId } = req.query;
+    const { orderId, status, chargeId, method } = req.query;
     
-    console.log('Payment return:', { orderId, status, chargeId });
+    console.log('Payment return:', { orderId, status, chargeId, method });
     
     // Serve the payment return HTML page
     res.sendFile(path.join(__dirname, 'paymentReturn.html'));

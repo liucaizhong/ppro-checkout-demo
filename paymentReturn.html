@@ -179,6 +179,7 @@
         .detail-value {
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
+            word-break: break-all;
         }
 
         .actions {
@@ -333,9 +334,9 @@
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                orderId: params.get('orderId'),
-                status: params.get('status'),
-                chargeId: params.get('chargeId')
+                status: params.get('status') || 'created',
+                chargeId: params.get('chargeId') || sessionStorage.getItem('pendingChargeId'),
+                method: params.get('method'),
             };
         }
 
@@ -343,8 +344,6 @@
         function formatAmount(amount, currency) {
             const symbols = {
                 'EUR': '€',
-                'GBP': '£',
-                'USD': '$',
                 'PLN': 'zł'
             };
             const symbol = symbols[currency] || currency;
@@ -354,9 +353,9 @@
 
         // Update UI based on payment status
         function updateUI(statusData) {
-            const { status, orderId, chargeId = sessionStorage.getItem('pendingChargeId'), paymentMethod, amount, currency, error } = statusData;
+            const { status, chargeId = sessionStorage.getItem('pendingChargeId'), paymentMethod, error } = statusData;
 
-            console.log('status 2', status);
+            console.log('status 2', status, paymentMethod);
 
             // Show payment details
             elements.paymentDetails.style.display = 'block';
@@ -367,14 +366,14 @@
             // Update based on status
             const statusLower = (status || '').toLowerCase();
 
-            if (statusLower === 'complete' || statusLower === 'success' || statusLower === 'captured') {
+            if (statusLower.includes('success') || statusLower.includes('captured')) {
                 // Success state
                 elements.statusIcon.className = 'status-icon success';
                 elements.statusIcon.innerHTML = '✓';
                 elements.statusTitle.textContent = 'Payment Successful!';
                 elements.statusMessage.textContent = 'Your payment has been processed successfully.';
                 elements.infoBox.style.display = 'block';
-            } else if (statusLower === 'pending' || statusLower === 'processing' || statusLower === 'authentication_pending') {
+            } else if (statusLower.includes('pending') || statusLower.includes('processing')) {
                 // Pending state
                 elements.statusIcon.className = 'status-icon pending pulse';
                 elements.statusIcon.innerHTML = '⏳';
@@ -383,7 +382,7 @@
                 elements.retryBtn.style.display = 'inline-block';
                 
                 // Auto-retry after 5 seconds
-                setTimeout(checkPaymentStatus, 60000);
+                setTimeout(checkPaymentStatus, 5000);
             } else if (statusLower === 'failed' || statusLower === 'error' || statusLower === 'cancelled') {
                 // Failed state
                 elements.statusIcon.className = 'status-icon failed';
@@ -410,11 +409,12 @@
             const params = getUrlParams();
             console.log('params', params);
             
-            if (!params.orderId && !params.chargeId) {
+            if (!params.chargeId) {
                 console.log('update status to error');
                 updateUI({
                     status: 'Error',
-                    error: 'No order ID or charge ID provided'
+                    paymentMethod: params.method,
+                    error: 'No charge ID provided'
                 });
                 return;
             }
@@ -426,8 +426,8 @@
                 if (!chargeId) {
                     updateUI({
                         status: params.status || 'Unknown',
-                        orderId: params.orderId,
-                        error: 'Unable to verify payment status - no charge ID available'
+                        error: 'Unable to verify payment status - no charge ID available',
+                        paymentMethod: params.method,
                     });
                     return;
                 }
@@ -442,26 +442,24 @@
                 console.log('check status', data);
                 updateUI({
                     status: data.status,
-                    orderId: data.orderId || params.orderId,
-                    chargeId: data.id,
-                    paymentMethod: data.paymentMethod,
-                    amount: data.amount,
-                    currency: data.currency
+                    chargeId: data.chargeId,
+                    paymentMethod: data.method,
                 });
 
                 // Clear session storage on success
-                if (data.status.toLowerCase() === 'successful' || data.status.toLowerCase() === 'success' || data.status.toLowerCase() === 'complete') {
+                const statusLower = (data.status || '').toLowerCase();
+                (statusLower.includes('success') || statusLower.includes('captured'))
+                if (statusLower.includes('success') || statusLower.includes('captured')) {
                     console.log('remove pending chargeId');
                     sessionStorage.removeItem('pendingChargeId');
-                    sessionStorage.removeItem('idempotencyKey');
                 }
 
             } catch (error) {
                 console.error('Error checking payment status:', error);
                 updateUI({
                     status: 'Error',
-                    orderId: params.orderId,
-                    error: error.message || 'Failed to verify payment status'
+                    error: error.message || 'Failed to verify payment status',
+                    paymentMethod: params.method,
                 });
             }
         }
@@ -485,8 +483,8 @@
             if (params.status === 'cancelled') {
                 updateUI({
                     status: 'Cancelled',
-                    orderId: params.orderId,
-                    error: 'Payment was cancelled.'
+                    error: 'Payment was cancelled.',
+                    paymentMethod: params.method,
                 });
             } else {
                 // Check status via API

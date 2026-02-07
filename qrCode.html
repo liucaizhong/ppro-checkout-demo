@@ -394,7 +394,7 @@
     <script>
         const CONFIG = {
             API_BASE_URL: 'http://localhost:3000/api',
-            POLLING_INTERVAL: 3000, // 3 seconds
+            POLLING_INTERVAL: 5000, // 5 seconds
             QR_EXPIRY_TIME: 300 // 5 minutes in seconds
         };
 
@@ -442,8 +442,6 @@
         function formatAmount(amount, currency) {
             const symbols = {
                 'EUR': '€',
-                'GBP': '£',
-                'USD': '$',
                 'PLN': 'zł'
             };
             const symbol = symbols[currency] || currency;
@@ -479,13 +477,6 @@
             }
         }
 
-        // Generate BEP format QR code data
-        function generateBEPFormat(params) {
-            // BEP (BLIK Express Payment) format
-            // Format: BEP:{merchantId}:{orderId}:{amount}:{currency}
-            return `BEP:${params.merchantId || 'MERCHANT'}:${params.orderId}:${params.amount}:${params.currency}`;
-        }
-
         // Start countdown timer
         function startTimer() {
             elements.timer.style.display = 'block';
@@ -519,7 +510,7 @@
                 const response = await fetch(`${CONFIG.API_BASE_URL}/payments/status/${state.chargeId}`);
                 const data = await response.json();
 
-                if (!response.success) {
+                if (!data.success) {
                     throw new Error(data.error || 'Failed to fetch status');
                 }
 
@@ -529,7 +520,7 @@
                     stopPolling();
                     showStatus('✓ Payment successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=complete`;
+                        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=success&method=${state.paymentMethod}`;
                     }, 2000);
                 } else if (status === 'failed' || status === 'error') {
                     stopPolling();
@@ -570,13 +561,13 @@
         // Cancel payment handler
         elements.cancelBtn.addEventListener('click', () => {
             stopPolling();
-            
+            console.log('state:', state);
             if (elements.cancelBtn.textContent === 'Return to Checkout') {
                 window.location.href = '/';
             } else {
                 const confirmCancel = confirm('Are you sure you want to cancel this payment?');
                 if (confirmCancel) {
-                    window.location.href = `/payment-return?orderId=${state.orderId}&status=cancelled`;
+                    window.location.href = `/payment-return?orderId=${state.orderId}&status=cancelled&method=${state.paymentMethod}`;
                 }
             }
         });
@@ -620,15 +611,6 @@
 
             // Generate QR code
             let qrData = params.qrData;
-            
-            // If no QR data provided, generate BEP format
-            if (!qrData && params.orderId && params.amount && params.currency) {
-                qrData = generateBEPFormat({
-                    orderId: params.orderId,
-                    amount: params.amount,
-                    currency: params.currency
-                });
-            }
 
             if (qrData) {
                 const success = generateQRCode(qrData);

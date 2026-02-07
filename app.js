@@ -12,6 +12,11 @@ const state = {
     currentChargeId: null,
 };
 
+const symbols = {
+    'EUR': '€',
+    'PLN': 'zł'
+};
+
 // DOM Elements
 const elements = {
     currencySelect: document.getElementById('currency'),
@@ -105,7 +110,7 @@ function updateRecurringOption() {
 function updatePayButton() {
     if (state.selectedMethod) {
         elements.payButton.disabled = false;
-        const amount = '€119.79';
+        const amount = `${symbols[state.selectedCurrency]}119.79`;
         elements.payButton.querySelector('.button-text').textContent = `Pay ${amount}`;
     } else {
         elements.payButton.disabled = true;
@@ -160,7 +165,7 @@ async function handleRedirectFlow(paymentData) {
         
         const data = await response.json();
 
-        console.log('response', JSON.stringify(data));
+        console.log('handleRedirectFlow response:', JSON.stringify(data));
         
         if (!data.success) {
             throw new Error(data.error || 'Failed to create payment');
@@ -170,7 +175,7 @@ async function handleRedirectFlow(paymentData) {
         
         // Store charge ID in session for status check after redirect
         sessionStorage.setItem('pendingChargeId', data.chargeId);
-        sessionStorage.setItem('idempotencyKey', paymentData.idempotencyKey);
+        console.log('pendingChargeId:', data.chargeId)
         
         if (data.qrCode) {
             console.log('qrcode payload:', data.qrCode);
@@ -180,9 +185,9 @@ async function handleRedirectFlow(paymentData) {
             const qrPageUrl = new URL('/qr-payment', window.location.origin);
             qrPageUrl.searchParams.set('orderId', data.orderId);
             qrPageUrl.searchParams.set('chargeId', data.chargeId);
-            qrPageUrl.searchParams.set('paymentMethod', paymentData.method);
-            qrPageUrl.searchParams.set('amount', paymentData.amount);
-            qrPageUrl.searchParams.set('currency', paymentData.currency);
+            qrPageUrl.searchParams.set('paymentMethod', data.method);
+            qrPageUrl.searchParams.set('amount', data.amount);
+            qrPageUrl.searchParams.set('currency', data.currency);
             
             // Add QR data if provided by API, otherwise generate BEP format on QR page
             qrPageUrl.searchParams.set('qrData', data.qrCode);
@@ -191,10 +196,10 @@ async function handleRedirectFlow(paymentData) {
                 window.location.href = qrPageUrl.toString();
             }, 1000);
         }
-        else if (data.requestUrl) {
+        else if (data.redirectUrl) {
             showStatus(`Redirecting to ${data.method}...`, 'pending');
             setTimeout(() => {
-                window.location.href = data.requestUrl;
+                window.location.href = data.redirectUrl;
             }, 1000);
         } else {
             throw new Error('No redirect URL received');
@@ -221,7 +226,6 @@ async function checkPaymentStatus() {
             
             // Clear session storage
             sessionStorage.removeItem('pendingChargeId');
-            sessionStorage.removeItem('idempotencyKey');
             
             // Clean up URL
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -312,9 +316,4 @@ function showStatus(message, type = 'pending') {
 
 function hideStatus() {
     elements.paymentStatus.style.display = 'none';
-}
-
-// Export for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { handlePayment, checkPaymentStatus };
 }
