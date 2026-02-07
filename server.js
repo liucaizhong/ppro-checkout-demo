@@ -376,46 +376,6 @@ app.get('/payment-return', (req, res) => {
 });
 
 /**
- * Webhook Handler
- */
-app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
-    try {
-        const payload = req.body;
-        console.log('Webhook received:', payload);
-        
-        // Verify webhook signature (implement based on PPRO documentation)
-        
-        // Process webhook event
-        const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
-        
-        console.log('Webhook event type:', event.type || event.eventType);
-        console.log('Charge ID:', event.chargeId);
-        console.log('Status:', event.status);
-        
-        // Handle different event types
-        switch (event.type || event.eventType) {
-            case 'charge.succeeded':
-                console.log('Payment succeeded!');
-                // Update order status, send confirmation email, etc.
-                break;
-            case 'charge.failed':
-                console.log('Payment failed!');
-                // Handle failure
-                break;
-            case 'charge.pending':
-                console.log('Payment pending');
-                break;
-        }
-        
-        res.status(200).json({ received: true });
-        
-    } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(400).json({ error: error.message });
-    }
-});
-
-/**
  * Health Check
  */
 app.get('/health', (req, res) => {
