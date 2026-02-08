@@ -1,496 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Payment Result - PPRO Checkout</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #FF6B6B;
-            --secondary: #4ECDC4;
-            --success: #4CAF50;
-            --error: #F44336;
-            --warning: #FF9800;
-            --bg-primary: #0F0F0F;
-            --bg-secondary: #1A1A1A;
-            --bg-tertiary: #252525;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B0B0B0;
-            --border: #333333;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --spacing-md: 1.5rem;
-            --spacing-lg: 2rem;
-            --spacing-xl: 3rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 50%, #0F0F0F 100%);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-lg);
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .return-container {
-            max-width: 600px;
-            width: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-xl);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 1;
-            animation: slideUp 0.6s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .status-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto var(--spacing-lg);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            animation: scaleIn 0.5s ease 0.2s both;
-        }
-
-        @keyframes scaleIn {
-            from {
-                transform: scale(0);
-            }
-            to {
-                transform: scale(1);
-            }
-        }
-
-        .status-icon.success {
-            background: rgba(76, 175, 80, 0.2);
-            border: 3px solid var(--success);
-        }
-
-        .status-icon.pending {
-            background: rgba(255, 152, 0, 0.2);
-            border: 3px solid var(--warning);
-        }
-
-        .status-icon.failed {
-            background: rgba(244, 67, 54, 0.2);
-            border: 3px solid var(--error);
-        }
-
-        .status-icon.loading {
-            background: rgba(78, 205, 196, 0.2);
-            border: 3px solid var(--secondary);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(78, 205, 196, 0.3);
-            border-top-color: var(--secondary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: var(--spacing-md);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .status-message {
-            text-align: center;
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .payment-details {
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        .detail-value {
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            word-break: break-all;
-        }
-
-        .actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: var(--spacing-lg);
-        }
-
-        .btn {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            text-align: center;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #E85555 100%);
-            color: white;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .info-box {
-            background: rgba(78, 205, 196, 0.1);
-            border: 1px solid rgba(78, 205, 196, 0.3);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
-            margin-top: var(--spacing-lg);
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-        }
-
-        .info-box strong {
-            color: var(--secondary);
-        }
-
-        .error-details {
-            background: rgba(244, 67, 54, 0.1);
-            border: 1px solid rgba(244, 67, 54, 0.3);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
-            margin-top: var(--spacing-md);
-            font-size: 0.9rem;
-            color: var(--error);
-        }
-
-        @media (max-width: 640px) {
-            .return-container {
-                padding: var(--spacing-lg);
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
-</head>
-<body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/paymentReturn.css" />
+  </head>
+  <body>
     <div class="return-container">
-        <div id="statusIcon" class="status-icon loading">
-            <div class="spinner"></div>
+      <div id="statusIcon" class="status-icon loading">
+        <div class="spinner"></div>
+      </div>
+
+      <h1 id="statusTitle">Verifying Payment...</h1>
+      <p id="statusMessage" class="status-message">
+        Please wait while we confirm your payment status.
+      </p>
+
+      <div id="paymentDetails" class="payment-details" style="display: none">
+        <div class="detail-row">
+          <span class="detail-label">Charge ID:</span>
+          <span class="detail-value" id="chargeId">-</span>
         </div>
-
-        <h1 id="statusTitle">Verifying Payment...</h1>
-        <p id="statusMessage" class="status-message">Please wait while we confirm your payment status.</p>
-
-        <div id="paymentDetails" class="payment-details" style="display: none;">
-            <div class="detail-row">
-                <span class="detail-label">Charge ID:</span>
-                <span class="detail-value" id="chargeId">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Payment Method:</span>
-                <span class="detail-value" id="paymentMethod">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Status:</span>
-                <span class="detail-value" id="status">-</span>
-            </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value" id="paymentMethod">-</span>
         </div>
-
-        <div id="errorDetails" class="error-details" style="display: none;"></div>
-
-        <div class="actions">
-            <a href="/" class="btn btn-primary">Return to Checkout</a>
-            <button id="retryBtn" class="btn btn-secondary" style="display: none;">Check Status Again</button>
+        <div class="detail-row">
+          <span class="detail-label">Status:</span>
+          <span class="detail-value" id="status">-</span>
         </div>
+      </div>
 
-        <div id="infoBox" class="info-box" style="display: none;">
-            <strong>Next Steps:</strong> A confirmation email has been sent to your registered email address. If you have any questions, please contact our support team.
-        </div>
+      <div id="errorDetails" class="error-details" style="display: none"></div>
+
+      <div class="actions">
+        <a href="/" class="btn btn-primary">Return to Checkout</a>
+        <button id="retryBtn" class="btn btn-secondary" style="display: none">
+          Check Status Again
+        </button>
+      </div>
+
+      <div id="infoBox" class="info-box" style="display: none">
+        <strong>Next Steps:</strong> A confirmation email has been sent to your
+        registered email address. If you have any questions, please contact our
+        support team.
+      </div>
     </div>
 
-    <script>
-        const CONFIG = {
-            API_BASE_URL: 'http://localhost:3000/api'
-        };
-
-        const elements = {
-            statusIcon: document.getElementById('statusIcon'),
-            statusTitle: document.getElementById('statusTitle'),
-            statusMessage: document.getElementById('statusMessage'),
-            paymentDetails: document.getElementById('paymentDetails'),
-            chargeId: document.getElementById('chargeId'),
-            paymentMethod: document.getElementById('paymentMethod'),
-            status: document.getElementById('status'),
-            errorDetails: document.getElementById('errorDetails'),
-            retryBtn: document.getElementById('retryBtn'),
-            infoBox: document.getElementById('infoBox')
-        };
-
-        // Parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                status: params.get('status') || 'created',
-                chargeId: params.get('chargeId') || sessionStorage.getItem('pendingChargeId'),
-                method: params.get('method'),
-            };
-        }
-
-        // Format amount for display
-        function formatAmount(amount, currency) {
-            const symbols = {
-                'EUR': '€',
-                'PLN': 'zł'
-            };
-            const symbol = symbols[currency] || currency;
-            const value = (amount / 100).toFixed(2);
-            return `${symbol}${value}`;
-        }
-
-        // Update UI based on payment status
-        function updateUI(statusData) {
-            const { status, chargeId = sessionStorage.getItem('pendingChargeId'), paymentMethod, error } = statusData;
-
-            console.log('status 2', status, paymentMethod);
-
-            // Show payment details
-            elements.paymentDetails.style.display = 'block';
-            elements.chargeId.textContent = chargeId || '-';
-            elements.paymentMethod.textContent = paymentMethod || '-';
-            elements.status.textContent = status || '-';
-
-            // Update based on status
-            const statusLower = (status || '').toLowerCase();
-
-            if (statusLower.includes('success') || statusLower.includes('captured')) {
-                // Success state
-                elements.statusIcon.className = 'status-icon success';
-                elements.statusIcon.innerHTML = '✓';
-                elements.statusTitle.textContent = 'Payment Successful!';
-                elements.statusMessage.textContent = 'Your payment has been processed successfully.';
-                elements.infoBox.style.display = 'block';
-            } else if (statusLower.includes('pending') || statusLower.includes('processing')) {
-                // Pending state
-                elements.statusIcon.className = 'status-icon pending pulse';
-                elements.statusIcon.innerHTML = '⏳';
-                elements.statusTitle.textContent = 'Payment Processing';
-                elements.statusMessage.textContent = 'Your payment is being processed. This may take a few moments.';
-                elements.retryBtn.style.display = 'inline-block';
-                
-                // Auto-retry after 5 seconds
-                setTimeout(checkPaymentStatus, 5000);
-            } else if (statusLower === 'failed' || statusLower === 'error' || statusLower === 'cancelled') {
-                // Failed state
-                elements.statusIcon.className = 'status-icon failed';
-                elements.statusIcon.innerHTML = '✗';
-                elements.statusTitle.textContent = 'Payment Failed';
-                elements.statusMessage.textContent = 'Unfortunately, your payment could not be processed.';
-                
-                if (error) {
-                    elements.errorDetails.textContent = error;
-                    elements.errorDetails.style.display = 'block';
-                }
-            } else {
-                // Unknown status
-                elements.statusIcon.className = 'status-icon pending';
-                elements.statusIcon.innerHTML = '?';
-                elements.statusTitle.textContent = 'Payment Status Unknown';
-                elements.statusMessage.textContent = 'We are unable to determine the payment status at this time.';
-                elements.retryBtn.style.display = 'inline-block';
-            }
-        }
-
-        // Check payment status via API
-        async function checkPaymentStatus() {
-            const params = getUrlParams();
-            console.log('params', params);
-            
-            if (!params.chargeId) {
-                console.log('update status to error');
-                updateUI({
-                    status: 'Error',
-                    paymentMethod: params.method,
-                    error: 'No charge ID provided'
-                });
-                return;
-            }
-
-            try {
-                // Try to get charge ID from session storage if not in URL
-                const chargeId = params.chargeId || sessionStorage.getItem('pendingChargeId');
-                
-                if (!chargeId) {
-                    updateUI({
-                        status: params.status || 'Unknown',
-                        error: 'Unable to verify payment status - no charge ID available',
-                        paymentMethod: params.method,
-                    });
-                    return;
-                }
-                console.log('checkpaymentstatus', chargeId);
-                const response = await fetch(`${CONFIG.API_BASE_URL}/payments/status/${chargeId}`);
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to fetch payment status');
-                }
-
-                console.log('check status', data);
-                updateUI({
-                    status: data.status,
-                    chargeId: data.chargeId,
-                    paymentMethod: data.method,
-                });
-
-                // Clear session storage on success
-                const statusLower = (data.status || '').toLowerCase();
-                (statusLower.includes('success') || statusLower.includes('captured'))
-                if (statusLower.includes('success') || statusLower.includes('captured')) {
-                    console.log('remove pending chargeId');
-                    sessionStorage.removeItem('pendingChargeId');
-                }
-
-            } catch (error) {
-                console.error('Error checking payment status:', error);
-                updateUI({
-                    status: 'Error',
-                    error: error.message || 'Failed to verify payment status',
-                    paymentMethod: params.method,
-                });
-            }
-        }
-
-        // Retry button handler
-        elements.retryBtn.addEventListener('click', () => {
-            elements.statusIcon.className = 'status-icon loading';
-            elements.statusIcon.innerHTML = '<div class="spinner"></div>';
-            elements.statusTitle.textContent = 'Checking Status...';
-            elements.statusMessage.textContent = 'Please wait...';
-            elements.retryBtn.style.display = 'none';
-            
-            setTimeout(checkPaymentStatus, 1000);
-        });
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = getUrlParams();
-            
-            // If status is explicitly cancelled, show immediately
-            if (params.status === 'cancelled') {
-                updateUI({
-                    status: 'Cancelled',
-                    error: 'Payment was cancelled.',
-                    paymentMethod: params.method,
-                });
-            } else {
-                // Check status via API
-                setTimeout(checkPaymentStatus, 1000);
-            }
-        });
-    </script>
-</body>
+    <script src="../paymentReturn.js"></script>
+  </body>
 </html>

@@ -1,634 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scan QR Code - PPRO Checkout</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #FF6B6B;
-            --secondary: #4ECDC4;
-            --success: #4CAF50;
-            --error: #F44336;
-            --warning: #FF9800;
-            --bg-primary: #0F0F0F;
-            --bg-secondary: #1A1A1A;
-            --bg-tertiary: #252525;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B0B0B0;
-            --border: #333333;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --spacing-sm: 1rem;
-            --spacing-md: 1.5rem;
-            --spacing-lg: 2rem;
-            --spacing-xl: 3rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 50%, #0F0F0F 100%);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-lg);
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .qr-container {
-            max-width: 500px;
-            width: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-xl);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 1;
-            animation: slideUp 0.6s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .payment-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto var(--spacing-md);
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            animation: scaleIn 0.5s ease;
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-
-        h1 {
-            font-size: 1.75rem;
-            margin-bottom: var(--spacing-sm);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .qr-wrapper {
-            background: white;
-            border-radius: var(--radius-md);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-            position: relative;
-            animation: fadeIn 0.8s ease 0.3s both;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        #qrCode {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .qr-placeholder {
-            text-align: center;
-            color: #666;
-        }
-
-        .qr-placeholder .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid #E0E0E0;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            margin: 0 auto var(--spacing-md);
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .instructions {
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .instructions h3 {
-            font-size: 1rem;
-            margin-bottom: var(--spacing-sm);
-            color: var(--secondary);
-        }
-
-        .instructions ol {
-            margin-left: var(--spacing-md);
-            color: var(--text-secondary);
-        }
-
-        .instructions li {
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .payment-details {
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .detail-value {
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .timer {
-            text-align: center;
-            margin-bottom: var(--spacing-lg);
-            padding: var(--spacing-sm);
-            background: rgba(255, 152, 0, 0.1);
-            border: 1px solid rgba(255, 152, 0, 0.3);
-            border-radius: var(--radius-md);
-        }
-
-        .timer-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .timer-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--warning);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .timer-value.expired {
-            color: var(--error);
-        }
-
-        .actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            text-align: center;
-            display: inline-block;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #E85555 100%);
-            color: white;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-        }
-
-        .status-message {
-            text-align: center;
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--spacing-lg);
-            display: none;
-        }
-
-        .status-message.success {
-            background: rgba(76, 175, 80, 0.1);
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            color: var(--success);
-        }
-
-        .status-message.error {
-            background: rgba(244, 67, 54, 0.1);
-            border: 1px solid rgba(244, 67, 54, 0.3);
-            color: var(--error);
-        }
-
-        .status-message.pending {
-            background: rgba(78, 205, 196, 0.1);
-            border: 1px solid rgba(78, 205, 196, 0.3);
-            color: var(--secondary);
-        }
-
-        @media (max-width: 640px) {
-            .qr-container {
-                padding: var(--spacing-lg);
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-    </style>
-</head>
-<body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/qrCode.css" />
+  </head>
+  <body>
     <div class="qr-container">
-        <div class="header">
-            <div class="payment-icon">📱</div>
-            <h1 id="pageTitle">Scan QR Code</h1>
-            <p class="subtitle">Complete your payment using your mobile banking app</p>
-        </div>
+      <div class="header">
+        <div class="payment-icon">📱</div>
+        <h1 id="pageTitle">Scan QR Code</h1>
+        <p class="subtitle">
+          Complete your payment using your mobile banking app
+        </p>
+      </div>
 
-        <div id="statusMessage" class="status-message"></div>
+      <div id="statusMessage" class="status-message"></div>
 
-        <div class="qr-wrapper">
-            <div id="qrPlaceholder" class="qr-placeholder">
-                <div class="spinner"></div>
-                <p>Generating QR code...</p>
-            </div>
-            <div id="qrCode" style="display: none;"></div>
+      <div class="qr-wrapper">
+        <div id="qrPlaceholder" class="qr-placeholder">
+          <div class="spinner"></div>
+          <p>Generating QR code...</p>
         </div>
+        <div id="qrCode" style="display: none"></div>
+      </div>
 
-        <div id="timer" class="timer" style="display: none;">
-            <div class="timer-label">Time remaining</div>
-            <div class="timer-value" id="timerValue">05:00</div>
-        </div>
+      <div id="timer" class="timer" style="display: none">
+        <div class="timer-label">Time remaining</div>
+        <div class="timer-value" id="timerValue">05:00</div>
+      </div>
 
-        <div class="payment-details">
-            <div class="detail-row">
-                <span class="detail-label">Order ID:</span>
-                <span class="detail-value" id="orderId">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Payment Method:</span>
-                <span class="detail-value" id="paymentMethod">-</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Amount:</span>
-                <span class="detail-value" id="amount">-</span>
-            </div>
+      <div class="payment-details">
+        <div class="detail-row">
+          <span class="detail-label">Order ID:</span>
+          <span class="detail-value" id="orderId">-</span>
         </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value" id="paymentMethod">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Amount:</span>
+          <span class="detail-value" id="amount">-</span>
+        </div>
+      </div>
 
-        <div class="instructions">
-            <h3>How to pay:</h3>
-            <ol id="instructionsList">
-                <li>Open your mobile banking app</li>
-                <li>Select the payment option and scan this QR code</li>
-                <li>Confirm the payment in your app</li>
-                <li>Wait for confirmation</li>
-            </ol>
-        </div>
+      <div class="instructions">
+        <h3>How to pay:</h3>
+        <ol id="instructionsList">
+          <li>Open your mobile banking app</li>
+          <li>Select the payment option and scan this QR code</li>
+          <li>Confirm the payment in your app</li>
+          <li>Wait for confirmation</li>
+        </ol>
+      </div>
 
-        <div class="actions">
-            <button id="cancelBtn" class="btn btn-secondary">Cancel Payment</button>
-            <button id="checkStatusBtn" class="btn btn-primary" style="display: none;">Check Status</button>
-        </div>
+      <div class="actions">
+        <button id="cancelBtn" class="btn btn-secondary">Cancel Payment</button>
+        <button
+          id="checkStatusBtn"
+          class="btn btn-primary"
+          style="display: none"
+        >
+          Check Status
+        </button>
+      </div>
     </div>
 
     <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <script>
-        const CONFIG = {
-            API_BASE_URL: 'http://localhost:3000/api',
-            POLLING_INTERVAL: 5000, // 5 seconds
-            QR_EXPIRY_TIME: 300 // 5 minutes in seconds
-        };
-
-        const state = {
-            orderId: null,
-            chargeId: null,
-            paymentMethod: null,
-            amount: null,
-            currency: null,
-            qrData: null,
-            pollingInterval: null,
-            timerInterval: null,
-            remainingTime: CONFIG.QR_EXPIRY_TIME
-        };
-
-        const elements = {
-            pageTitle: document.getElementById('pageTitle'),
-            qrCode: document.getElementById('qrCode'),
-            qrPlaceholder: document.getElementById('qrPlaceholder'),
-            statusMessage: document.getElementById('statusMessage'),
-            timer: document.getElementById('timer'),
-            timerValue: document.getElementById('timerValue'),
-            orderId: document.getElementById('orderId'),
-            paymentMethod: document.getElementById('paymentMethod'),
-            amount: document.getElementById('amount'),
-            instructionsList: document.getElementById('instructionsList'),
-            cancelBtn: document.getElementById('cancelBtn'),
-            checkStatusBtn: document.getElementById('checkStatusBtn')
-        };
-
-        // Parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                orderId: params.get('orderId'),
-                chargeId: params.get('chargeId'),
-                qrData: params.get('qrData'),
-                paymentMethod: params.get('paymentMethod'),
-                amount: params.get('amount'),
-                currency: params.get('currency')
-            };
-        }
-
-        // Format amount for display
-        function formatAmount(amount, currency) {
-            const symbols = {
-                'EUR': '€',
-                'PLN': 'zł'
-            };
-            const symbol = symbols[currency] || currency;
-            const value = (amount / 100).toFixed(2);
-            return `${symbol}${value}`;
-        }
-
-        // Generate QR Code using QRCode.js
-        function generateQRCode(data) {
-            try {
-                // Clear previous QR code
-                elements.qrCode.innerHTML = '';
-                
-                // Create new QR code
-                const qr = new QRCode(elements.qrCode, {
-                    text: data,
-                    width: 256,
-                    height: 256,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-
-                // Show QR code, hide placeholder
-                elements.qrPlaceholder.style.display = 'none';
-                elements.qrCode.style.display = 'block';
-
-                return true;
-            } catch (error) {
-                console.error('Error generating QR code:', error);
-                showStatus('Failed to generate QR code', 'error');
-                return false;
-            }
-        }
-
-        // Start countdown timer
-        function startTimer() {
-            elements.timer.style.display = 'block';
-            
-            state.timerInterval = setInterval(() => {
-                state.remainingTime--;
-                
-                const minutes = Math.floor(state.remainingTime / 60);
-                const seconds = state.remainingTime % 60;
-                const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                
-                elements.timerValue.textContent = timeString;
-                
-                if (state.remainingTime <= 0) {
-                    clearInterval(state.timerInterval);
-                    elements.timerValue.classList.add('expired');
-                    elements.timerValue.textContent = 'EXPIRED';
-                    showStatus('QR code has expired. Please start a new payment.', 'error');
-                    stopPolling();
-                    elements.checkStatusBtn.style.display = 'none';
-                    elements.cancelBtn.textContent = 'Return to Checkout';
-                }
-            }, 1000);
-        }
-
-        // Poll payment status
-        async function pollPaymentStatus() {
-            if (!state.chargeId) return;
-
-            try {
-                const response = await fetch(`${CONFIG.API_BASE_URL}/payments/status/${state.chargeId}`);
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to fetch status');
-                }
-
-                const status = data.status.toLowerCase();
-
-                if (status === 'successful' || status === 'success' || status === 'captured') {
-                    stopPolling();
-                    showStatus('✓ Payment successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=success&method=${state.paymentMethod}`;
-                    }, 2000);
-                } else if (status === 'failed' || status === 'error') {
-                    stopPolling();
-                    showStatus('✗ Payment failed. Please try again.', 'error');
-                    elements.checkStatusBtn.style.display = 'inline-block';
-                }
-
-            } catch (error) {
-                console.error('Error polling status:', error);
-            }
-        }
-
-        // Start polling
-        function startPolling() {
-            state.pollingInterval = setInterval(pollPaymentStatus, CONFIG.POLLING_INTERVAL);
-            showStatus('Waiting for payment confirmation...', 'pending');
-        }
-
-        // Stop polling
-        function stopPolling() {
-            if (state.pollingInterval) {
-                clearInterval(state.pollingInterval);
-                state.pollingInterval = null;
-            }
-            if (state.timerInterval) {
-                clearInterval(state.timerInterval);
-                state.timerInterval = null;
-            }
-        }
-
-        // Show status message
-        function showStatus(message, type) {
-            elements.statusMessage.textContent = message;
-            elements.statusMessage.className = `status-message ${type}`;
-            elements.statusMessage.style.display = 'block';
-        }
-
-        // Cancel payment handler
-        elements.cancelBtn.addEventListener('click', () => {
-            stopPolling();
-            console.log('state:', state);
-            if (elements.cancelBtn.textContent === 'Return to Checkout') {
-                window.location.href = '/';
-            } else {
-                const confirmCancel = confirm('Are you sure you want to cancel this payment?');
-                if (confirmCancel) {
-                    window.location.href = `/payment-return?orderId=${state.orderId}&status=cancelled&method=${state.paymentMethod}`;
-                }
-            }
-        });
-
-        // Check status manually
-        elements.checkStatusBtn.addEventListener('click', async () => {
-            elements.checkStatusBtn.disabled = true;
-            elements.checkStatusBtn.textContent = 'Checking...';
-            
-            await pollPaymentStatus();
-            
-            setTimeout(() => {
-                elements.checkStatusBtn.disabled = false;
-                elements.checkStatusBtn.textContent = 'Check Status';
-            }, 2000);
-        });
-
-        // Initialize page
-        function initialize() {
-            const params = getUrlParams();
-
-            // Store state
-            state.orderId = params.orderId;
-            state.chargeId = params.chargeId;
-            state.paymentMethod = params.paymentMethod;
-            state.amount = params.amount;
-            state.currency = params.currency;
-            state.qrData = params.qrData;
-
-            // Update UI
-            elements.orderId.textContent = params.orderId || '-';
-            elements.paymentMethod.textContent = params.paymentMethod || '-';
-            elements.amount.textContent = params.amount && params.currency 
-                ? formatAmount(parseInt(params.amount), params.currency)
-                : '-';
-
-            // Update page title based on payment method
-            if (params.paymentMethod) {
-                elements.pageTitle.textContent = `${params.paymentMethod.toUpperCase()} Payment`;
-            }
-
-            // Generate QR code
-            let qrData = params.qrData;
-
-            if (qrData) {
-                const success = generateQRCode(qrData);
-                if (success) {
-                    startTimer();
-                    startPolling();
-                }
-            } else {
-                showStatus('Invalid QR code data. Please try again.', 'error');
-                elements.qrPlaceholder.innerHTML = '<p>Unable to generate QR code</p>';
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initialize);
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', stopPolling);
-    </script>
-</body>
+    <script src="../generateQRCode.js"></script>
+  </body>
 </html>
