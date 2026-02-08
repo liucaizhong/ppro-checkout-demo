@@ -14,11 +14,11 @@ app.use(express.static('.'));
 
 // PPRO Configuration
 const PPRO_CONFIG = {
-    merchantId: process.env.PPRO_MERCHANT_ID || 'LLDEFAULTTESTCONTRACT',
-    apiKey: process.env.PPRO_API_KEY || 'ncSnNPkrwQXWPA4Neotej2XANupy1ksT8vUVS0Rot9eXz6ROA82ubQDHJOTEGeIeJpvgXrK3Gk6GOpCE',
-    baseUrl: process.env.PPRO_BASE_URL || 'https://api.sandbox.eu.ppro.com',
-    returnUrl: process.env.RETURN_URL || 'http://localhost:3000/payment-return',
-    webhookUrl: process.env.WEBHOOK_URL || 'http://localhost:3000/webhook'
+    merchantId: process.env.PPRO_MERCHANT_ID,
+    apiKey: process.env.PPRO_API_KEY,
+    baseUrl: process.env.PPRO_BASE_URL,
+    returnUrl: process.env.RETURN_URL,
+    webhookUrl: process.env.WEBHOOK_URL
 };
 
 // In-memory store for idempotency (use Redis in production)
@@ -33,14 +33,14 @@ const recurringTokenStore = new Map();
  * Serve index.html at root path
  */
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'pages/index.html'));
 });
 
 /**
  * Serve QR code page
  */
 app.get('/qr-payment', (req, res) => {
-    res.sendFile(path.join(__dirname, 'qrCode.html'));
+    res.sendFile(path.join(__dirname, 'pages/qrCode.html'));
 });
 
 /**
@@ -365,7 +365,7 @@ app.get('/payment-return', (req, res) => {
     console.log('Payment return:', { orderId, status, chargeId, method });
     
     // Serve the payment return HTML page
-    res.sendFile(path.join(__dirname, 'paymentReturn.html'));
+    res.sendFile(path.join(__dirname, 'pages/paymentReturn.html'));
 });
 
 /**

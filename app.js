@@ -1,7 +1,6 @@
 // Configuration
 const CONFIG = {
     API_BASE_URL: 'http://localhost:3000/api',
-    PPRO_DROPIN_SCRIPT: 'https://checkout.ppro.com/js/checkout.js'
 };
 
 // State management
@@ -26,7 +25,6 @@ const elements = {
     enableRecurring: document.getElementById('enableRecurring'),
     errorMessage: document.getElementById('errorMessage'),
     paymentStatus: document.getElementById('paymentStatus'),
-    dropinContainer: document.getElementById('dropinContainer'),
     formSection: document.querySelector('.form-section'),
 };
 
@@ -110,7 +108,7 @@ function updateRecurringOption() {
 function updatePayButton() {
     if (state.selectedMethod) {
         elements.payButton.disabled = false;
-        const amount = `${symbols[state.selectedCurrency]}119.79`;
+        const amount = '€119.79';
         elements.payButton.querySelector('.button-text').textContent = `Pay ${amount}`;
     } else {
         elements.payButton.disabled = true;
@@ -243,32 +241,24 @@ async function checkPaymentStatusById(chargeId) {
         const response = await fetch(`${CONFIG.API_BASE_URL}/payments/status/${chargeId}`);
         const data = await response.json();
         
-        if (!response.ok) {
+        if (!response.success) {
             throw new Error(data.error || 'Failed to get payment status');
         }
         
         console.log('Payment status:', data);
         
+        const statusLower = (data.status || '').toLowerCase();
         // Display status
-        switch (data.status.toLowerCase()) {
-            case 'successful':
-            case 'success':
-                showStatus('✓ Payment successful! Thank you for your purchase.', 'success');
-                break;
-            case 'pending':
-            case 'processing':
-            case 'authentication_pending':
-                showStatus('⏳ Payment is being processed...', 'pending');
-                setTimeout(() => checkPaymentStatusById(chargeId), 2000);
-                break;
-            case 'failed':
-            case 'error':
-                showStatus('✗ Payment failed. Please try again.', 'failed');
-                break;
-            default:
-                showStatus(`Payment status: ${data.status}`, 'pending');
+        if (statusLower.includes('success') || statusLower.includes('captured')) {
+            showStatus('✓ Payment successful! Thank you for your purchase.', 'success');
+        } else if (statusLower.includes('pending') || statusLower.includes('processing')) {
+            showStatus('⏳ Payment is being processed...', 'pending');
+            setTimeout(() => checkPaymentStatusById(chargeId), 2000);
+        } else if (statusLower.includes('failed') || statusLower.includes('error')) {
+            showStatus('✗ Payment failed. Please try again.', 'failed');
+        } else {
+            showStatus(`Payment status: ${data.status}`, 'pending');
         }
-        
     } catch (error) {
         console.error('Error checking status:', error);
         throw error;

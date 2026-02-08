@@ -606,25 +606,6 @@ select:focus {
     color: var(--error);
 }
 
-/* Drop-in Container */
-#dropinContainer {
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-lg);
-    background: var(--bg-tertiary);
-    border: 2px solid var(--primary);
-    border-radius: var(--radius-lg);
-    animation: slideUp 0.5s ease;
-}
-
-.dropin-wrapper h3 {
-    margin-bottom: var(--spacing-md);
-    color: var(--primary);
-}
-
-#ppro-dropin {
-    margin-bottom: var(--spacing-md);
-}
-
 .cancel-button {
     padding: var(--spacing-sm) var(--spacing-md);
     background: transparent;
