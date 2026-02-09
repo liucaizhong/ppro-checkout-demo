@@ -126,7 +126,7 @@ function generatePaymentData(
     paymentMethod: method,
     amount: {
       value: amount,
-      currency: currency,
+      currency,
     },
     order: {
       orderReferenceNumber: orderId,
@@ -373,7 +373,7 @@ app.get("/api/payments/status/:chargeId", async (req, res) => {
       chargeId,
       status: charge.status,
       orderId,
-      amount: charge.amount,
+      amount: charge.amount || charge.authorizations.amount,
       currency: charge.currency,
       redirectUrl,
       method: charge.paymentMethod,

@@ -46,7 +46,7 @@ function updateUI(statusData) {
     error,
   } = statusData;
 
-  console.log("status 2", status, paymentMethod);
+  console.log("statusData:", status, paymentMethod);
 
   // Show payment details
   elements.paymentDetails.style.display = "block";

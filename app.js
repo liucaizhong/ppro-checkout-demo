@@ -208,6 +208,7 @@ async function checkPaymentStatus() {
   const chargeId = sessionStorage.getItem("pendingChargeId");
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get("status");
+  console.log("pendingChargeId inside:", chargeId);
 
   if (chargeId && status) {
     console.log("Checking payment status for charge:", chargeId);
@@ -237,7 +238,7 @@ async function checkPaymentStatusById(chargeId) {
     );
     const data = await response.json();
 
-    if (!response.success) {
+    if (!data.success) {
       throw new Error(data.error || "Failed to get payment status");
     }
 
@@ -258,7 +259,8 @@ async function checkPaymentStatusById(chargeId) {
       setTimeout(() => checkPaymentStatusById(chargeId), 2000);
     } else if (
       statusLower.includes("failed") ||
-      statusLower.includes("error")
+      statusLower.includes("error") ||
+      statusLower.includes("cancelled")
     ) {
       showStatus("✗ Payment failed. Please try again.", "failed");
     } else {
