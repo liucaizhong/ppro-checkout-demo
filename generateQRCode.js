@@ -122,19 +122,19 @@ async function pollPaymentStatus() {
       throw new Error(data.error || "Failed to fetch status");
     }
 
-    const status = data.status.toLowerCase();
+    const statusLower = (data.tatus || "").toLowerCase();
 
-    if (
-      status === "successful" ||
-      status === "success" ||
-      status === "captured"
-    ) {
+    if (statusLower.includes("success") || statusLower.includes("captured")) {
       stopPolling();
       showStatus("✓ Payment successful! Redirecting...", "success");
       setTimeout(() => {
         window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=success&method=${state.paymentMethod}`;
       }, 2000);
-    } else if (status === "failed" || status === "error") {
+    } else if (
+      statusLower.includes("failed") ||
+      statusLower.includes("error") ||
+      statusLower.includes("cancel")
+    ) {
       stopPolling();
       showStatus("✗ Payment failed. Please try again.", "error");
       elements.checkStatusBtn.style.display = "inline-block";

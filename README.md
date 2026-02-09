@@ -278,7 +278,7 @@ ALLOWED_ORIGINS=https://yourdomain.com
 
 - State management
 - Payment method filtering
-- Status polling
+- Payment trigger
 - Error handling
 
 ### Frontend (`paymentReturn.js`)

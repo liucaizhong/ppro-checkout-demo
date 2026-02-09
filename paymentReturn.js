@@ -80,9 +80,9 @@ function updateUI(statusData) {
     // Auto-retry after 5 seconds
     setTimeout(checkPaymentStatus, 5000);
   } else if (
-    statusLower === "failed" ||
-    statusLower === "error" ||
-    statusLower === "cancelled"
+    statusLower.includes("failed") ||
+    statusLower.includes("error") ||
+    statusLower.includes("cancel")
   ) {
     // Failed state
     elements.statusIcon.className = "status-icon failed";
@@ -109,7 +109,6 @@ function updateUI(statusData) {
 // Check payment status via API
 async function checkPaymentStatus() {
   const params = getUrlParams();
-  console.log("params", params);
 
   if (!params.chargeId) {
     console.log("update status to error");
@@ -150,14 +149,6 @@ async function checkPaymentStatus() {
       chargeId: data.chargeId,
       paymentMethod: data.method,
     });
-
-    // Clear session storage on success
-    const statusLower = (data.status || "").toLowerCase();
-    statusLower.includes("success") || statusLower.includes("captured");
-    if (statusLower.includes("success") || statusLower.includes("captured")) {
-      console.log("remove pending chargeId");
-      sessionStorage.removeItem("pendingChargeId");
-    }
   } catch (error) {
     console.error("Error checking payment status:", error);
     updateUI({

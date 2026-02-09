@@ -31,7 +31,7 @@ const elements = {
 document.addEventListener("DOMContentLoaded", () => {
   initializeEventListeners();
   updatePaymentMethodAvailability();
-  checkPaymentStatus();
+  initSessionStorage();
 });
 
 // Event Listeners
@@ -203,73 +203,11 @@ async function handleRedirectFlow(paymentData) {
   }
 }
 
-// Check payment status on page load (after redirect)
-async function checkPaymentStatus() {
-  const chargeId = sessionStorage.getItem("pendingChargeId");
-  const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get("status");
-  console.log("pendingChargeId inside:", chargeId);
-
-  if (chargeId && status) {
-    console.log("Checking payment status for charge:", chargeId);
-
-    showStatus("Verifying payment...", "pending");
-
-    try {
-      await checkPaymentStatusById(chargeId);
-
-      // Clear session storage
-      sessionStorage.removeItem("pendingChargeId");
-
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (error) {
-      console.error("Status check error:", error);
-      showError("Failed to verify payment status");
-    }
-  }
-}
-
-// Check payment status by ID
-async function checkPaymentStatusById(chargeId) {
-  try {
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/payments/status/${chargeId}`,
-    );
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.error || "Failed to get payment status");
-    }
-
-    console.log("Payment status:", data);
-
-    const statusLower = (data.status || "").toLowerCase();
-    // Display status
-    if (statusLower.includes("success") || statusLower.includes("captured")) {
-      showStatus(
-        "✓ Payment successful! Thank you for your purchase.",
-        "success",
-      );
-    } else if (
-      statusLower.includes("pending") ||
-      statusLower.includes("processing")
-    ) {
-      showStatus("⏳ Payment is being processed...", "pending");
-      setTimeout(() => checkPaymentStatusById(chargeId), 2000);
-    } else if (
-      statusLower.includes("failed") ||
-      statusLower.includes("error") ||
-      statusLower.includes("cancelled")
-    ) {
-      showStatus("✗ Payment failed. Please try again.", "failed");
-    } else {
-      showStatus(`Payment status: ${data.status}`, "pending");
-    }
-  } catch (error) {
-    console.error("Error checking status:", error);
-    throw error;
-  }
+// Initiate Session Store
+function initSessionStorage() {
+  const pendingChargeId = sessionStorage.getItem("pendingChargeId");
+  if (pendingChargeId) sessionStorage.removeItem("pendingChargeId");
+  console.log("remove pending chargeId");
 }
 
 // Utility Functions
