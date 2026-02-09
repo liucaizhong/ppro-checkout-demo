@@ -143,7 +143,7 @@ All payment creation endpoints support idempotency keys to prevent duplicate cha
 
 ```javascript
 Headers: {
-  'Request-Idempotency-Key': 'unique-key-per-request'
+  'x-idempotency-key': 'unique-key-per-request'
 }
 ```
 

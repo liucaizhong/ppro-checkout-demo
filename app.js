@@ -8,7 +8,6 @@ const state = {
   selectedMethod: null,
   selectedCurrency: "EUR",
   recurringEnabled: false,
-  currentChargeId: null,
 };
 
 const symbols = {
@@ -168,8 +167,6 @@ async function handleRedirectFlow(paymentData) {
     if (!data.success) {
       throw new Error(data.error || "Failed to create payment");
     }
-
-    state.currentChargeId = data.chargeId;
 
     // Store charge ID in session for status check after redirect
     sessionStorage.setItem("pendingChargeId", data.chargeId);

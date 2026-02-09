@@ -18,7 +18,6 @@ const PPRO_CONFIG = {
   apiKey: process.env.PPRO_API_KEY,
   baseUrl: process.env.PPRO_BASE_URL,
   returnUrl: process.env.RETURN_URL,
-  webhookUrl: process.env.WEBHOOK_URL,
 };
 
 // In-memory store for idempotency (use Redis in production)
