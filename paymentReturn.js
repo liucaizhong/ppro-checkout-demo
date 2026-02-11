@@ -109,31 +109,20 @@ function updateUI(statusData) {
 // Check payment status via API
 async function checkPaymentStatus() {
   const params = getUrlParams();
+  // Try to get charge ID from session storage if not in URL
+  const chargeId = params.chargeId || sessionStorage.getItem("pendingChargeId");
+  console.log("checkpaymentstatus", chargeId);
 
-  if (!params.chargeId) {
-    console.log("update status to error");
+  if (!chargeId) {
     updateUI({
-      status: "Error",
+      status: params.status || "Unknown",
+      error: "Unable to verify payment status - no charge ID available",
       paymentMethod: params.method,
-      error: "No charge ID provided",
     });
     return;
   }
 
   try {
-    // Try to get charge ID from session storage if not in URL
-    const chargeId =
-      params.chargeId || sessionStorage.getItem("pendingChargeId");
-
-    if (!chargeId) {
-      updateUI({
-        status: params.status || "Unknown",
-        error: "Unable to verify payment status - no charge ID available",
-        paymentMethod: params.method,
-      });
-      return;
-    }
-    console.log("checkpaymentstatus", chargeId);
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/payments/status/${chargeId}`,
     );
@@ -155,6 +144,7 @@ async function checkPaymentStatus() {
       status: "Error",
       error: error.message || "Failed to verify payment status",
       paymentMethod: params.method,
+      chargeId,
     });
   }
 }
@@ -173,10 +163,12 @@ elements.retryBtn.addEventListener("click", () => {
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   const params = getUrlParams();
+  const chargeId = params.chargeId || sessionStorage.getItem("pendingChargeId");
 
   // If status is explicitly cancelled, show immediately
   if (params.status === "cancelled") {
     updateUI({
+      chargeId,
       status: "Cancelled",
       error: "Payment was cancelled.",
       paymentMethod: params.method,
