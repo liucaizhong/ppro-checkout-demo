@@ -26,22 +26,6 @@ const idempotencyStore = new Map();
 // In-memory store for recurring tokens (use database in production)
 const recurringTokenStore = new Map();
 
-// Helper Functions
-
-/**
- * Serve index.html at root path
- */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "pages/index.html"));
-});
-
-/**
- * Serve QR code page
- */
-app.get("/qr-payment", (req, res) => {
-  res.sendFile(path.join(__dirname, "pages/qrCode.html"));
-});
-
 /**
  * Make authenticated request to PPRO API
  */
@@ -382,6 +366,20 @@ app.get("/api/payments/status/:chargeId", async (req, res) => {
     console.error("Status fetch error:", error);
     res.status(500).json({ error: error.message });
   }
+});
+
+/**
+ * Serve index.html at root path
+ */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "pages/index.html"));
+});
+
+/**
+ * Serve QR code page
+ */
+app.get("/qr-payment", (req, res) => {
+  res.sendFile(path.join(__dirname, "pages/qrCode.html"));
 });
 
 /**
