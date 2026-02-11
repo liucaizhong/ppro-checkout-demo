@@ -19,7 +19,7 @@ const elements = {
 function getUrlParams() {
   const params = new URLSearchParams(window.location.search);
   return {
-    status: params.get("status") || "created",
+    status: params.get("status"),
     chargeId:
       params.get("chargeId") || sessionStorage.getItem("pendingChargeId"),
     method: params.get("method"),
@@ -79,11 +79,7 @@ function updateUI(statusData) {
 
     // Auto-retry after 5 seconds
     setTimeout(checkPaymentStatus, 5000);
-  } else if (
-    statusLower.includes("failed") ||
-    statusLower.includes("error") ||
-    statusLower.includes("cancel")
-  ) {
+  } else if (statusLower.includes("failed") || statusLower.includes("error")) {
     // Failed state
     elements.statusIcon.className = "status-icon failed";
     elements.statusIcon.innerHTML = "✗";
@@ -95,6 +91,18 @@ function updateUI(statusData) {
       elements.errorDetails.textContent = error;
       elements.errorDetails.style.display = "block";
     }
+  } else if (statusLower.includes("cancel")) {
+    // Cancelled state
+    elements.statusIcon.className = "status-icon failed";
+    elements.statusIcon.innerHTML = "✗";
+    elements.statusTitle.textContent = "Payment Cancelled";
+    elements.statusMessage.textContent = "Your payment has been cancelled.";
+  } else if (statusLower.includes("expired")) {
+    // Cancelled state
+    elements.statusIcon.className = "status-icon failed";
+    elements.statusIcon.innerHTML = "✗";
+    elements.statusTitle.textContent = "Payment Expired";
+    elements.statusMessage.textContent = "Your payment has been expired.";
   } else {
     // Unknown status
     elements.statusIcon.className = "status-icon pending";
@@ -164,17 +172,22 @@ elements.retryBtn.addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const params = getUrlParams();
   const chargeId = params.chargeId || sessionStorage.getItem("pendingChargeId");
-
+  // Update based on status
+  const statusLower = (params.status || "").toLowerCase();
+  console.log("Payment return loaded status:", statusLower);
   // If status is explicitly cancelled, show immediately
-  if (params.status === "cancelled") {
-    updateUI({
-      chargeId,
-      status: "Cancelled",
-      error: "Payment was cancelled.",
-      paymentMethod: params.method,
-    });
-  } else {
+  if (
+    !statusLower ||
+    statusLower.includes("pending") ||
+    statusLower.includes("processing")
+  ) {
     // Check status via API
     setTimeout(checkPaymentStatus, 1000);
+  } else {
+    updateUI({
+      chargeId,
+      status: params.status,
+      paymentMethod: params.method,
+    });
   }
 });

@@ -175,7 +175,7 @@ async function handleRedirectFlow(paymentData) {
     if (data.qrCode) {
       console.log("qrcode payload:", data.qrCode);
       // Redirect to QR code page for BLIK and similar methods
-      showStatus(`Generating ${data.method} QR code...`, "pending");
+      showStatus(`Generating ${data.method} QR Code...`, "pending");
 
       const qrPageUrl = new URL("/qr-payment", window.location.origin);
       qrPageUrl.searchParams.set("orderId", data.orderId);

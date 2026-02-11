@@ -266,9 +266,9 @@ GET /api
 ## 📊 Status Flow
 
 ```
-CREATED → PROCESSING → CAPTURED
-↓                  ↓
-CANCELLED          FAILED
+INITIATE → PROCESSING → CAPTURED
+      ↓             ↓
+      CANCELLED     FAILED
 ```
 
 The system automatically polls for status updates and displays real-time feedback.

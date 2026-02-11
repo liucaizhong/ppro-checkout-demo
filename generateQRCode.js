@@ -100,7 +100,10 @@ function startTimer() {
       clearInterval(state.timerInterval);
       elements.timerValue.classList.add("expired");
       elements.timerValue.textContent = "EXPIRED";
-      showStatus("QR code has expired. Please start a new payment.", "error");
+      showStatus(
+        "QR code has been expired. Please start a new payment.",
+        "error",
+      );
       stopPolling();
       elements.checkStatusBtn.style.display = "none";
       elements.cancelBtn.textContent = "Return to Checkout";
@@ -128,7 +131,7 @@ async function pollPaymentStatus() {
       stopPolling();
       showStatus("✓ Payment successful! Redirecting...", "success");
       setTimeout(() => {
-        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=success&method=${state.paymentMethod}`;
+        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=Success&method=${state.paymentMethod}`;
       }, 2000);
     } else if (
       statusLower.includes("failed") ||
@@ -183,7 +186,7 @@ elements.cancelBtn.addEventListener("click", () => {
       "Are you sure you want to cancel this payment?",
     );
     if (confirmCancel) {
-      window.location.href = `/payment-return?orderId=${state.orderId}&status=cancelled&method=${state.paymentMethod}`;
+      window.location.href = `/payment-return?orderId=${state.orderId}&status=Cancelled&method=${state.paymentMethod}`;
     }
   }
 });
