@@ -14,7 +14,7 @@ A production-ready checkout page implementing PPRO Global API with multiple auth
 
 ### Extra Mile Bonus Points ⭐
 
-- ⭐ **Multiple Authentication Flows For Bancontact**: Redirect & QR code
+- ⭐ **Multiple Authentication Flows**: Redirect & QR code for Bancontact
 - ⭐ **Idempotency Support**: Prevents duplicate transactions
 - ⭐ **Mobile Responsive**: Optimized for all devices
 - ⭐ **Recurring Payments**: iDEAL subscription support
@@ -25,16 +25,16 @@ A production-ready checkout page implementing PPRO Global API with multiple auth
 ```
 ├── Frontend (Javascript)
 │   └── pages
-│         ├── index.html          # Main checkout page
-│         ├── paymentReturn.html  # Payment Result page
-│         └── qrCode.html         # Bancontact QR code page
-│   └── icons                     # Store Icons
-│   └── styles
-│         ├── index.css           # Modern, responsive styling for index.html
-│         ├── paymentReturn.css   # Modern, responsive styling for paymentReturn.html
-│         ├── qrCode.css          # Modern, responsive styling for qrCode.html
-│   └── app.js                    # Client-side logic & flow management
-│   └── paymentReturn.js          # Payment results refresh logic
+│   │     ├── index.html          # Main checkout page
+│   │     ├── paymentReturn.html  # Payment Result page
+│   │     └── qrCode.html         # Bancontact QR code page
+│   ├── icons                     # Icons Store
+│   ├── styles
+│   │     ├── index.css           # Modern, responsive styling for index.html
+│   │     ├── paymentReturn.css   # Modern, responsive styling for paymentReturn.html
+│   │     └── qrCode.css          # Modern, responsive styling for qrCode.html
+│   ├── app.js                    # Client-side logic & flow management
+│   ├── paymentReturn.js          # Payment results refresh logic
 │   └── generateQRCode.js         # Generate QR code logic
 │
 ├── Backend (Node.js/Express)
@@ -150,6 +150,7 @@ Headers: {
 **How it works:**
 
 - Same key within 24h returns cached response
+- Check idempotency keys when creating new charges
 - Prevents accidental duplicate charges
 - Automatically handled by frontend
 - Pass to PPRO Server for backend verification
@@ -198,6 +199,12 @@ GET /api/payments/status/:chargeId
 GET /health
 ```
 
+### API Sketch
+
+```http
+GET /api
+```
+
 ## 🎨 Design Features
 
 - **Modern Dark Theme**: Professional financial UI
@@ -213,11 +220,20 @@ GET /health
 
 1. Select PLN currency
 2. Choose BLIK payment method
-3. Select "Redirect" flow
-4. Click "Pay €119.79"
-5. Enter test code on BLIK page
+3. Click "Pay €119.79"
+4. Enter test code on BLIK page
+5. Buyer confirm the payment on the phone
 6. Return to merchant site
 7. View success status
+
+### Test iDEAL Payment (Redirect)
+
+1. Select EUR currency
+2. Choose iDEAL payment method
+3. Click "Pay €119.79"
+4. Select success flow on iDEAL page
+5. Return to merchant site
+6. View success status
 
 ### Test iDEAL Recurring
 
@@ -228,12 +244,31 @@ GET /health
 5. Token saved automatically
 6. View success status
 
+### Test Bancontact Payment (Redirect)
+
+1. Select EUR currency
+2. Choose Bancontact payment method
+3. Click "Pay €119.79"
+4. Input card number and expiration on Bancontact page
+5. Return to merchant site
+6. View success status
+
+### Test Bancontact Payment (Scan-to-Pay)
+
+1. Select EUR currency
+2. Choose Bancontact QR payment method
+3. Click "Pay €119.79"
+4. Navigate to QR Code page
+5. Buyer scan QR code by the phone
+6. Return to merchant site
+7. View success status
+
 ## 📊 Status Flow
 
 ```
-CREATED → PENDING → PROCESSING → CAPTURED
-↓                            ↓
-CANCELLED                    FAILED
+CREATED → PROCESSING → CAPTURED
+↓                  ↓
+CANCELLED          FAILED
 ```
 
 The system automatically polls for status updates and displays real-time feedback.
@@ -317,7 +352,7 @@ ALLOWED_ORIGINS=https://yourdomain.com
 ## 📚 Resources
 
 - [PPRO Developer Hub](https://developerhub.ppro.com/)
-- [Global API Documentation](https://developerhub.ppro.com/global-api/docs)
+- [Global API Documentation](https://developerhub.ppro.com/global-api/reference/api-authentication)
 
 ## 🎯 Demo Highlights
 
