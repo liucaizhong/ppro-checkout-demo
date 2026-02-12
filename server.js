@@ -178,6 +178,9 @@ function generatePaymentData(
         redirectConfigs,
         {
           type: "MULTI_FACTOR",
+          // settings: {
+          //   verificationCode: "777123",
+          // },
         },
       ],
     };
