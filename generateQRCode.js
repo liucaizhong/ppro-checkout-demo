@@ -131,7 +131,7 @@ async function pollPaymentStatus() {
       stopPolling();
       showStatus("✓ Payment successful! Redirecting...", "success");
       setTimeout(() => {
-        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=Success&method=${state.paymentMethod}`;
+        window.location.href = `/payment-return?orderId=${state.orderId}&chargeId=${state.chargeId}&status=CAPTURED&method=${state.paymentMethod}`;
       }, 2000);
     } else if (
       statusLower.includes("failed") ||
@@ -186,7 +186,7 @@ elements.cancelBtn.addEventListener("click", () => {
       "Are you sure you want to cancel this payment?",
     );
     if (confirmCancel) {
-      window.location.href = `/payment-return?orderId=${state.orderId}&status=Cancelled&method=${state.paymentMethod}`;
+      window.location.href = `/payment-return?orderId=${state.orderId}&status=CANCELLED&method=${state.paymentMethod}`;
     }
   }
 });
